@@ -59,5 +59,26 @@ namespace Eureka_Forbes.Controllers.ProductMaster
             return View(products);
         }
 
+        [HttpPost]
+        public async Task<JsonResult> DeleteProduct(int productId)
+        {
+            try
+            {
+                bool isDeleted = await _dbContext.DeleteProduct(productId);
+                if (isDeleted)
+                {
+                    return Json(new { success = true, message = "Product deleted successfully." });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Error deleting product." });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Exception: {ex.Message}" });
+            }
+        }
+
     }
 }

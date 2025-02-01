@@ -4,7 +4,6 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-
 <h2 class="text-center mt-3">Product Models & Steps</h2>
 
 <div class="container mt-4">
@@ -13,22 +12,29 @@
         {
             @foreach (var product in Model)
             {
-                <div class="accordion-item">
-                    <h2 class="accordion-header" id="heading-@product.ProductId">
+                <div class="accordion-item" id="@product.ProductId">
+                    <h2 class="accordion-header" id="@product.ProductId">
                         <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@product.ProductId">
                             <strong>@product.ProductName</strong>
                         </button>
                     </h2>
                     <div id="collapse-@product.ProductId" class="accordion-collapse collapse" data-bs-parent="#productAccordion">
                         <div class="accordion-body">
+                            <!-- Edit and Delete buttons in the accordion body -->
+                            <div class="mb-3">
+                                <!-- Placeholder for Edit functionality -->
+                                <button class="btn btn-sm btn-warning me-2" type="button" onclick="alert('Edit functionality coming soon!')">Edit</button>
+                                <button class="btn btn-sm btn-danger" type="button" onclick="deleteProduct(@product.ProductId)">Delete</button>
+                            </div>
+                            
                             @if (product.Models.Any())
                             {
                                 <div class="list-group">
-                                    @foreach (var modelm in product.Models)
+                                    @foreach (var models in product.Models)
                                     {
                                         <div class="list-group-item">
-                                            <h5 class="mb-1">@modelm.ModelName</h5>
-                                            @if (modelm.Steps.Any())
+                                            <h5 class="mb-1">@models.ModelName</h5>
+                                            @if (models.Steps.Any())
                                             {
                                                 <table class="table table-bordered mt-2">
                                                     <thead class="table-dark">
@@ -38,7 +44,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @foreach (var step in modelm.Steps.OrderBy(s => s.Priority))
+                                                        @foreach (var step in models.Steps.OrderBy(s => s.Priority))
                                                         {
                                                             <tr>
                                                                 <td>@step.Priority</td>
@@ -75,3 +81,29 @@
 <!-- Bootstrap 5 for styling -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // JavaScript function to delete a product after confirmation
+    function deleteProduct(productId) {
+        if (confirm("All models and steps associated with the product will be deleted. Do you wish to continue?")) {
+            fetch('/ProductMaster/DeleteProduct?productId=' + productId, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Product deleted successfully.");
+                    // Refresh the page to update the product list or remove the product's accordion from the DOM
+                    window.location.reload();
+                } else {
+                    alert("Error deleting product: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("An error occurred while deleting the product.");
+            });
+        }
+    }
+</script>
+

@@ -374,5 +374,22 @@ namespace Eureka_Forbes.Data
 
             return products;
         }
+
+        //Delete Product
+        public async Task<bool> DeleteProduct(int productId)
+        {
+            using (SqlConnection con = new SqlConnection(Con))
+            {
+                using (SqlCommand cmd = new SqlCommand("spDeleteProduct", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@ProductId", productId);
+                    await con.OpenAsync();
+                    await cmd.ExecuteNonQueryAsync();
+                    return true;
+                }
+            }
+        }
+
     }
 }
