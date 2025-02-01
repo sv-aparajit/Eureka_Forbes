@@ -2,7 +2,7 @@
 {
     public class ProductMasterVM
     {
-        public List<Product> Product { get; set; }
+        public Product Product { get; set; }
         public List<ProductModels> ProductModels { get; set; }
         public List<ProductModelStep> ProductModelSteps { get; set; }
     }
