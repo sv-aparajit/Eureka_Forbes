@@ -71,51 +71,48 @@ namespace Eureka_Forbes.Controllers
             ViewBag.stepsList = await _dbContext.GetStepsAsync();
             return View();
         }
-        [HttpPost]
-        public async Task<JsonResult> SaveProduct([FromBody]  ProductMasterVM productData)
-        {
+        //[HttpPost]
+        //public async Task<JsonResult> SaveProduct([FromBody]  ProductMasterVM productData)
+        //{
             
 
-            //return Json(new { success = false, message = "Invalid model state" });
-            if (productData == null || productData.Product == null || productData.ProductModels == null || productData.ProductModelSteps == null)
-            {
-                return Json(new { success = false, message = "Invalid data received." });
-            }
+        //    //return Json(new { success = false, message = "Invalid model state" });
+        //    if (productData == null || productData.Product == null || productData.ProductModels == null || productData.ProductModelSteps == null)
+        //    {
+        //        return Json(new { success = false, message = "Invalid data received." });
+        //    }
 
-            try
-            {
-                // Convert C# object to JSON string
-                string jsonData = JsonSerializer.Serialize(productData, new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase // Ensures property names are in JSON camelCase format
-                });
+        //    try
+        //    {
+        //        // Convert C# object to JSON string
+        //        string jsonData = JsonSerializer.Serialize(productData, new JsonSerializerOptions
+        //        {
+        //            PropertyNamingPolicy = JsonNamingPolicy.CamelCase // Ensures property names are in JSON camelCase format
+        //        });
 
-                // Call the database method
-                bool isSaved = await _dbContext.SaveProductModel(jsonData);
+        //        // Call the database method
+        //        bool isSaved = await _dbContext.SaveProductModel(jsonData);
 
-                if (isSaved)
-                {
-                    return Json(new { success = true, message = "Product saved successfully." });
-                }
+        //        if (isSaved)
+        //        {
+        //            return Json(new { success = true, message = "Product saved successfully." });
+        //        }
 
-                return Json(new { success = false, message = "Error saving product." });
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = $"Exception: {ex.Message}" });
-            }
-            //var subCategories = "";//await _dbContext.SaveProductModel(productData);
-            //return Json(subCategories);
-            //if (productData == null)
-            //{
-            //    return Json(new { success = false, message = "Received null data" });
-            //}
+        //        return Json(new { success = false, message = "Error saving product." });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Json(new { success = false, message = $"Exception: {ex.Message}" });
+        //    }
+        //}
 
-            //if (ModelState.IsValid)
-            //{
-            //    var subCategories = await _dbContext.SaveProductModel(productData);
-            //    return Json(new { success = true, data = subCategories });
-            //}
-        }
+        ////Read operation on Product
+        //public IActionResult GetProductsWithModelsAndSteps()
+        //{
+        //    List<ProductViewModel> products = _dbContext.GetProductsWithModelsAndSteps();
+        //    return View(products);
+        //}
+
+
     }
 }

@@ -1,0 +1,430 @@
+﻿@using Eureka_Forbes.Models.ProductMaster
+@{
+    ViewData["Title"] = "CreateProductMaster";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var stepsList = ViewBag.stepsList as List<Steps>;
+}
+
+<h1>CreateProductMaster</h1>
+
+<div class="row">
+    <div class="col-12 mb-3">
+        <label>Product</label>
+        <input type="text" class="form-control" placeholder="Enter Product Name" />
+    </div>
+    <div class="col-12 mb-3">
+        <label>Product Model</label>
+        <input type="text" class="form-control" placeholder="Enter Product Model Name" />
+    </div>
+    <div class="col-12">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Step Name</th>
+                    <th>Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                @foreach (var item in stepsList)
+                {
+                    <tr>
+                        <td>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="@item.StepId" onchange="togglePriority(this)">
+                                <label class="form-check-label" for="@item.StepId">
+                                    @item.StepName
+                                </label>
+                            </div>
+                        </td>
+                        @* <td><input type="checkbox" />@item.StepName</td> *@
+                        <td><input type="number" class="form-control priority-input" name="Priority" value="0" />
+                            <input type="hidden" name="StepId" value="@item.StepId" />
+                        </td>
+                    </tr>
+                }
+
+
+                <!-- Add rows here -->
+            </tbody>
+        </table>
+        <div class="col-12 mb-3">
+            <button type="submit" class="btn btn-primary" onclick="btnSaveProduct()">Submit</button>
+        </div>
+    </div>
+</div>
+
+
+<div class="row hidden">
+    <div class="col-xxl-5 m-b-30">
+        <div class="card card-statistics h-100 mb-0">
+            <div class="card-header d-flex justify-content-between">
+                <div class="card-heading">
+                    <h4 class="card-title">Assembly Line</h4>
+                </div>
+                <div class="dropdown">
+                    <a class="p-2" href="javascript:;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fe fe-circle"></i>
+                    </a>
+                    <div class="dropdown-menu custom-dropdown dropdown-menu-right p-4">
+                        <h6 class="mb-1">Action</h6>
+                        <a class="dropdown-item" href="javascript:;"><i class="fa-fw fa fa-file-o pr-2"></i>View reports</a>
+                        <a class="dropdown-item" href="javascript:;"><i class="fa-fw fa fa-edit pr-2"></i>Edit reports</a>
+                        <a class="dropdown-item" href="javascript:;"><i class="fa-fw fa fa-bar-chart-o pr-2"></i>Statistics</a>
+                        <h6 class="mb-1 mt-3">Export</h6>
+                        <a class="dropdown-item" href="javascript:;"><i class="fa-fw fa fa-file-pdf-o pr-2"></i>Export to PDF</a>
+                        <a class="dropdown-item" href="javascript:;"><i class="fa-fw fa fa-file-excel-o pr-2"></i>Export to CSV</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <h5 class="mb-0">Assembly Line 1</h5>
+                    </div>
+                    <div class="col-12 col-md-6 text-right">
+                        <button type="button" class="btn btn-badge btn-primary">
+                            Add New Shift
+                        </button>
+                    </div>
+                    <div class="col-xs-12">
+                        <div class="progress my-3">
+                            <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-top my-4"></div>
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-2">
+                        <h5 class="mb-0">Assembly Line 2</h5>
+                        <h6 class="mb-0">Shift 1 (9:30am - 5:30pm)</h6>
+                    </div>
+                    <div class="col-12 col-md-6 text-right mb-2">
+                        <span class="mr-2 mb-2 mr-sm-0 mb-sm-0 badge badge-pill badge-info">In Progress</span>
+                    </div>
+                    <div class="col-xs-12">
+                        <div class="progress">
+                            <div class="progress-bar bg-info progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 mt-2">
+                        <h5 class="mb-0">Total Production: 700</h5>
+                    </div>
+                    <div class="col-12 col-md-4 mt-2">
+                        <h6 class="mb-0">Assgined Staff: 65</h6>
+                    </div>
+                </div>
+                <div class="border-top my-4"></div>
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-2">
+                        <h5 class="mb-0">Assembly Line 3</h5>
+                        <h6 class="mb-0">Shift 1 (9:30am - 5:30pm)</h6>
+                    </div>
+                    <div class="col-12 col-md-6 text-right mb-2">
+                        <span class="mr-2 mb-2 mr-sm-0 mb-sm-0 badge badge-pill badge-info">In Progress</span>
+                    </div>
+                    <div class="col-xs-12">
+                        <div class="progress">
+                            <div class="progress-bar bg-info progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 mt-2">
+                        <h5 class="mb-0">Total Production: 700</h5>
+                    </div>
+                    <div class="col-12 col-md-4 mt-2">
+                        <h6 class="mb-0">Assgined Staff: 65</h6>
+                    </div>
+                </div>
+                <div class="border-top my-4"></div>
+                <div class="row">
+                    <div class="col-12 col-md-6 mb-2">
+                        <h5 class="mb-0">Assembly Line 4</h5>
+                        <h6 class="mb-0">Shift 1 (9:30am - 5:30pm)</h6>
+                    </div>
+                    <div class="col-12 col-md-6 text-right mb-2">
+                        <span class="mr-2 mb-2 mr-sm-0 mb-sm-0 badge badge-pill badge-info">In Progress</span>
+                    </div>
+                    <div class="col-xs-12">
+                        <div class="progress">
+                            <div class="progress-bar bg-info progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4 mt-2">
+                        <h5 class="mb-0">Total Production: 700</h5>
+                    </div>
+                    <div class="col-12 col-md-4 mt-2">
+                        <h6 class="mb-0">Assgined Staff: 65</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xxl-7 m-b-30">
+        <div class="card card-statistics h-100 mb-0">
+            <div class="card-header d-flex justify-content-between">
+                <div class="card-heading">
+                    <h4 class="card-title">Assembly Line Activity</h4>
+                </div>
+                <div class="dropdown">
+                    <a class="p-2" href="javascript:;" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <i class="fe fe-more-horizontal"></i>
+                    </a>
+                    <div class="dropdown-menu custom-dropdown dropdown-menu-right p-4">
+                        <h6 class="mb-1">Action</h6>
+                        <a class="dropdown-item" href="javascript:;"><i class="fa-fw fa fa-file-o pr-2"></i>View reports</a>
+                        <a class="dropdown-item" href="javascript:;"><i class="fa-fw fa fa-edit pr-2"></i>Edit reports</a>
+                        <a class="dropdown-item" href="javascript:;"><i class="fa-fw fa fa-bar-chart-o pr-2"></i>Statistics</a>
+                        <h6 class="mb-1 mt-3">Export</h6>
+                        <a class="dropdown-item" href="javascript:;"><i class="fa-fw fa fa-file-pdf-o pr-2"></i>Export to PDF</a>
+                        <a class="dropdown-item" href="javascript:;"><i class="fa-fw fa fa-file-excel-o pr-2"></i>Export to CSV</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <ul class="activity">
+                    <li class="activity-item primary">
+                        <div class="activity-info">
+                            <h5 class="mb-0">Station 1 </h5>
+                            <span>Raw Material</span>
+                        </div>
+                    </li>
+                    <li class="activity-item info">
+                        <div class="activity-info">
+                            <h5 class="mb-0">Station 2 </h5>
+                            <span>Pre-filter and Pump Assembly</span>
+                        </div>
+                    </li>
+                    <li class="activity-item success">
+                        <div class="activity-info">
+                            <h5 class="mb-0">Station 3 </h5>
+                            <span>Membrane Housing and Tubing</span>
+                        </div>
+                    </li>
+                    <li class="activity-item danger">
+                        <div class="activity-info">
+                            <h5 class="mb-0">Station 4 </h5>
+                            <span>Control Panel and Electronics Integration</span>
+                        </div>
+                    </li>
+                    <li class="activity-item warning">
+                        <div class="activity-info">
+                            <h5 class="mb-0">Station 5 </h5>
+                            <span>Final Assembly and Sealing</span>
+                        </div>
+                    </li>
+                    <li class="activity-item info">
+                        <div class="activity-info">
+                            <h5 class="mb-0">Station 6 </h5>
+                            <span>Quality Testing</span>
+                        </div>
+                    </li>
+                    <li class="activity-item success">
+                        <div class="activity-info">
+                            <h5 class="mb-0">Station 6 </h5>
+                            <span>Packaging</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row hidden">
+    <div class="col-lg-12">
+        <div class="card card-statistics">
+            <div class="card-header">
+                <div class="card-heading">
+                    <h4 class="card-title">Shift Plan Calendar</h4>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-3">
+                        <div id='external-events'>
+                            <button class="btn btn-primary btn-block" data-toggle="modal" data-target="#eventModal">Schedule New Shift</button>
+                            <p class="mt-3">
+                                Drag and drop your event or click in the calendar.
+                            </p>
+                            <div class='fc-event fc-event-primary' data-color="fc-event-primary"><span></span> Modal 2 Production</div>
+                            <div class='fc-event fc-event-warning' data-color="fc-event-warning"><span></span> Modal 6 Production</div>
+                            <div class='fc-event fc-event-danger' data-color="fc-event-danger"><span></span> Modal 4 Production</div>
+                            <div class='fc-event fc-event-success' data-color="fc-event-success"><span></span> Modal 1 Production</div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+                                <label class="form-check-label" for="defaultCheck1">
+                                    Remove After Drop
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-9">
+                        <div class="event-calendar">
+                            <div id="event-calendar"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- end row -->
+<!-- event Modal -->
+<div class="modal fade" id="eventModal" tabindex="-1" role="dialog" aria-labelledby="verticalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="verticalCenterTitle">Add New Shift</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="modelemail">Shift Name</label>
+                        <input type="email" class="form-control" id="modelemail">
+                    </div>
+                    <div class="form-group">
+                        <label>Assembly Line</label>
+                        <select class="form-control">
+                            <option>Line 1</option>
+                            <option>Line 2</option>
+                            <option>line 3</option>
+                            <option>line $</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>No Of Production</label>
+                        <select class="form-control">
+                            <option>650</option>
+                            <option>700</option>
+                            <option>1000</option>
+                            <option>1500</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>No Of Staff</label>
+                        <select class="form-control">
+                            <option>65</option>
+                            <option>75</option>
+                            <option>100</option>
+                            <option>120</option>
+                        </select>
+                    </div>
+
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/assets/js/vendors.js"></script>
+<!-- custom app -->
+<script src="~/assets/js/app.js"></script>
+<script>
+        // Disable all priority inputs by default on page load
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll('.priority-input').forEach(input => {
+            input.disabled = true; // Disable all priority inputs
+        });
+    });
+
+    function togglePriority(checkbox) {
+        const priorityInput = checkbox.closest('tr').querySelector('.priority-input');
+        priorityInput.disabled = !checkbox.checked; // Enable if checked, disable if unchecked
+        if (!checkbox.checked) {
+            priorityInput.value = "0"; // Reset priority value to 0 if unchecked
+        }
+    }
+        function btnSaveProduct() {
+        // Collect form data
+        debugger;
+        let productName = document.querySelector('input[placeholder="Enter Product Name"]').value;
+        let productModelName = document.querySelector('input[placeholder="Enter Product Model Name"]').value;
+        let steps = [];
+
+        if (!productName || !productModelName) {
+            alert('Please enter both Product Name and Product Model Name.');
+            return; // Prevent form submission
+        }
+
+        document.querySelectorAll('tbody tr').forEach(row => {
+            let checkbox = row.querySelector('.form-check-input');
+            let priorityInput = row.querySelector('input[name="Priority"]');
+            // Check if the hidden input exists
+        let stepIdElement = row.querySelector('input[name="StepId"]');
+        if (!stepIdElement) {
+            console.warn("Row does not contain a hidden input with name 'StepId'. Skipping this row.");
+            return; // Skip this row
+        }
+             let stepId = stepIdElement.value;
+
+            // Only include steps where the checkbox is checked
+            if (checkbox.checked) {
+                let stepName = row.querySelector('td:nth-child(1)').textContent.trim();
+                let priority = priorityInput.value;
+
+                // Ensure priority is a valid number (not 0 or null)
+                if (priority && !isNaN(priority) && priority > 0) {
+                    steps.push({
+                        StepName: stepName,
+                        Priority: parseInt(priority, 10), // Ensure priority is an integer
+                        StepId: stepId
+                    });
+                }
+            }
+        });
+
+        // Create JSON object
+        let productData = {
+            product: [{ productName: productName }],
+            ProductModels: [{ ModelName: productModelName }],
+            productModelSteps: steps
+        };
+
+        alert(JSON.stringify(productData)); // Use JSON.stringify to see the actual JSON structure
+
+        // Send JSON data to the server
+        fetch('/ProductMaster/SaveProduct', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(productData)
+        })
+        .then(response => response.json())
+            .then(data => {
+            if (data.success) {
+                alert('Entries saved successfully.');
+                window.location.href = '/ProductMaster/GetProductsWithModelsAndSteps';
+                //resetForm(); // Reset form fields after successful entry
+            } else {
+                alert('Error saving product: ' + data.message);
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('An error occurred while saving the product.');
+        });
+    }
+
+    // function resetForm() {
+    //     document.querySelector('input[placeholder="Enter Product Name"]').value = '';
+    //     document.querySelector('input[placeholder="Enter Product Model Name"]').value = '';
+
+    //     document.querySelectorAll('.form-check-input').forEach(checkbox => {
+    //         checkbox.checked = false;
+    //     });
+
+    //     document.querySelectorAll('.priority-input').forEach(input => {
+    //         input.disabled = true;
+    //         input.value = "0";
+    //     });
+    // }
+</script>

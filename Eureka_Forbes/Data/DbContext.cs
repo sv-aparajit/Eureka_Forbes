@@ -324,7 +324,7 @@ namespace Eureka_Forbes.Data
             //        {
 
             //            var prosteps = new Steps
-            //            {
+            //            
             //                StepId = Convert.ToInt32(rdr["StepId"]),
             //                StepName = rdr["StepName"].ToString()
             //            };
@@ -342,6 +342,70 @@ namespace Eureka_Forbes.Data
 
             //return "";
 
+        }
+
+        //Read Products with models and steps
+        public List<ProductViewModel> GetProductsWithModelsAndSteps()
+        {
+            List<ProductViewModel> products = new List<ProductViewModel>();
+
+            using (SqlConnection con = new SqlConnection(Con))
+            {
+                con.Open();
+                using (SqlCommand cmd = new SqlCommand("sp_GetProductsWithModelsAndSteps", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int productId = reader.GetInt32(0);
+                            var existingProduct = products.Find(p => p.ProductId == productId);
+
+                            if (existingProduct == null)
+                            {
+                                existingProduct = new ProductViewModel
+                                {
+                                    ProductId = productId,
+                                    ProductName = reader.GetString(1),
+                                    Models = new List<ModelViewModel>()
+                                };
+                                products.Add(existingProduct);
+                            }
+
+                            if (!reader.IsDBNull(2))
+                            {
+                                int modelId = reader.GetInt32(2);
+                                var existingModel = existingProduct.Models.Find(m => m.ModelId == modelId);
+
+                                if (existingModel == null)
+                                {
+                                    existingModel = new ModelViewModel
+                                    {
+                                        ModelId = modelId,
+                                        ModelName = reader.IsDBNull(3) ? "Unnamed Model" : reader.GetString(3), // Check ModelName for NULL,
+                                        ProductId = productId,
+                                        Steps = new List<StepViewModel>()
+                                    };
+                                    existingProduct.Models.Add(existingModel);
+                                }
+
+                                if (!reader.IsDBNull(4))
+                                {
+                                    existingModel.Steps.Add(new StepViewModel
+                                    {
+                                        StepId = reader.GetInt32(4),
+                                        StepName = reader.IsDBNull(5) ? "Unnamed Step" : reader.GetString(5), // Check StepName for NULL
+                                        Priority = reader.IsDBNull(6) ? 0 : Convert.ToInt32(reader["Priority"]) // Handle NULL Priority
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return products;
         }
     }
 }
