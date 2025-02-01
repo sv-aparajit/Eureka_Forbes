@@ -308,40 +308,7 @@ namespace Eureka_Forbes.Data
                 Console.WriteLine($"Database error: {ex.Message}");
                 return false;
             }
-            //string Con = _configuration.GetConnectionString("Conn");
-            //List<Steps> lst = new List<Steps>();
-            //try
-            //{
-            //    using (SqlConnection con = new SqlConnection(Con))
-            //    {
-            //        SqlCommand cmd = new SqlCommand("SELECT [StepId] ,[StepName] FROM [dbo].[StepMaster]", con);
-            //        cmd.CommandType = CommandType.Text;
-
-            //        con.Open();
-            //        SqlDataReader rdr = cmd.ExecuteReader();
-
-            //        while (rdr.Read())
-            //        {
-
-            //            var prosteps = new Steps
-            //            
-            //                StepId = Convert.ToInt32(rdr["StepId"]),
-            //                StepName = rdr["StepName"].ToString()
-            //            };
-
-            //            lst.Add(prosteps);
-            //        }
-            //        con.Close();
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-
-            //    throw ex;
-            //}
-
-            //return "";
-
+            
         }
 
         //Read Products with models and steps
