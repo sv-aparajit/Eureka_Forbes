@@ -6,6 +6,6 @@
             public string ModelName { get; set; }
             public int ProductId { get; set; }
             public List<StepViewModel> Steps { get; set; } = new List<StepViewModel>();
-        
+
     }
 }

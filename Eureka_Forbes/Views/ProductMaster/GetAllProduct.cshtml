@@ -1,0 +1,71 @@
+﻿@model IEnumerable<Eureka_Forbes.ProductModelMaster.ProductModleMasterVM>
+
+@{
+    ViewData["Title"] = "Get All Products and Models";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Product List</h1>
+
+<p>
+    <a asp-action="CreateProductMaster">Create New Product</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>Models</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var product in Model)
+        {
+            <tr id="row-@product.productMaster.ProductId">
+                <td>@product.productMaster.ProductName</td>
+                <td>
+                    <ul>
+                        @foreach (var modelm in product.modelMasters)
+                        {
+                            <li>@modelm.ModelName</li>
+                        }
+                    </ul>
+                </td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { id = product.productMaster.ProductId }) |
+                    @Html.ActionLink("Details", "Details", new { id = product.productMaster.ProductId }) |
+                    <a href="javascript:void(0);" class="delete-product" data-id="@product.productMaster.ProductId">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $(".delete-product").click(function () {
+                var productId = $(this).data("id");
+                if (confirm("Are you sure you want to delete this product?")) {
+                    $.ajax({
+                        url: '@Url.Action("DeleteProduct", "ProductMaster")',
+                        type: 'POST',
+                        data: { productId: productId },
+                        success: function (response) {
+                            if (response.success) {
+                                $("#row-" + productId).remove();
+                                alert(response.message);
+                            } else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function () {
+                            alert("Error deleting product.");
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}

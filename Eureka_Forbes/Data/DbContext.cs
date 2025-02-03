@@ -1,7 +1,9 @@
 ﻿using System.Data;
 using Eureka_Forbes.Models;
 using Eureka_Forbes.Models.ProductMaster;
+using Eureka_Forbes.ProductModelMaster;
 using Microsoft.Data.SqlClient;
+using Newtonsoft.Json;
 
 namespace Eureka_Forbes.Data
 {
@@ -390,6 +392,175 @@ namespace Eureka_Forbes.Data
                 }
             }
         }
+        //Update Product
+        public async Task<bool> UpdateProductMaster(int productId, ProductMasterUpdateModel model)
+        {
+            string jsonData = JsonConvert.SerializeObject(model, Formatting.None,
+                new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
+
+            using (SqlConnection con = new SqlConnection(Con)) // Use your existing connection string
+            {
+                using (SqlCommand cmd = new SqlCommand("spUpdateProductMaster", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@ProductId", productId);
+                    cmd.Parameters.AddWithValue("@JsonData", jsonData);
+
+                    await con.OpenAsync();
+                    await cmd.ExecuteNonQueryAsync();
+                    return true;
+                }
+            }
+        }
+        //Retreive Product,model and step to show before editing
+        public async Task<ProductMasterUpdateModel> GetProductForUpdate(int productId)
+        {
+            ProductMasterUpdateModel updateModel = null;
+
+            // SQL Queries for product data, product models, and product steps
+            string productQuery = "SELECT ProductId, ProductName FROM ProductMaster WHERE ProductId = @ProductId";
+            string modelsQuery = "SELECT ModelId, ModelName FROM ProductModels WHERE ProductId = @ProductId";
+            string stepsQuery = "SELECT StepId, StepName, ModelId, Priority FROM ProductStepsMaster WHERE ModelId IN (SELECT ModelId FROM ProductModels WHERE ProductId = @ProductId)";
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(Con))
+                {
+                    // Open the connection
+                    await con.OpenAsync();
+
+                    // Get Product Data
+                    using (SqlCommand cmd = new SqlCommand(productQuery, con))
+                    {
+                        cmd.Parameters.AddWithValue("@ProductId", productId);
+                        using (SqlDataReader rdr = await cmd.ExecuteReaderAsync())
+                        {
+                            if (rdr.Read())
+                            {
+                                updateModel = new ProductMasterUpdateModel
+                                {
+                                    Product = new Product
+                                    {
+                                        ProductName = rdr.GetString(1) // ProductName only
+                                    },
+                                    ProductModels = new List<ProductModelsUpdate>(),
+                                    ProductModelSteps = new List<StepUpdateModel>()
+                                };
+                            }
+                        }
+                    }
+
+                    if (updateModel == null)
+                        return null; // If no product is found
+
+                    // Get Product Models
+                    using (SqlCommand cmd = new SqlCommand(modelsQuery, con))
+                    {
+                        cmd.Parameters.AddWithValue("@ProductId", productId);
+                        using (SqlDataReader rdr = await cmd.ExecuteReaderAsync())
+                        {
+                            while (rdr.Read())
+                            {
+                                updateModel.ProductModels.Add(new ProductModelsUpdate
+                                {
+                                    ModelId = rdr.GetInt32(0),
+                                    ModelName = rdr.GetString(1) 
+                                });
+                            }
+                        }
+                    }
+
+                    // Get Product Steps related to Models
+                    using (SqlCommand cmd = new SqlCommand(stepsQuery, con))
+                    {
+                        cmd.Parameters.AddWithValue("@ProductId", productId);
+                        using (SqlDataReader rdr = await cmd.ExecuteReaderAsync())
+                        {
+                            while (rdr.Read())
+                            {
+                                updateModel.ProductModelSteps.Add(new StepUpdateModel
+                                {
+                                    StepId = rdr.IsDBNull(0) ? (int?)null : rdr.GetInt32(0), // Nullability handling for StepId
+                                    StepName = rdr.IsDBNull(1) ? string.Empty : rdr.GetString(1),
+                                    Priority = rdr.IsDBNull(3) ? 0 : rdr.GetByte(3) // Nullability handling for Priority
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log or handle the exception
+                throw new Exception("Error retrieving product data", ex);
+            }
+
+            return updateModel;
+        }
+
+        public async Task<List<ProductModleMasterVM>> GetProductModels()
+        {
+            List<ProductModleMasterVM> productList = new List<ProductModleMasterVM>();
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(Con))
+                {
+                    await con.OpenAsync();
+                    using (SqlCommand cmd = new SqlCommand(@"SELECT 
+                    p.ProductId, p.ProductName, 
+                    m.ModelId, m.ModelName, m.ProductId 
+                    FROM ProductMaster p
+                    LEFT JOIN ProductModels m ON p.ProductId = m.ProductId", con))
+                    {
+                        using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                        {
+                            Dictionary<int, ProductModleMasterVM> productDictionary = new Dictionary<int, ProductModleMasterVM>();
+
+                            while (await reader.ReadAsync())
+                            {
+                                int productId = reader["ProductId"] != DBNull.Value ? Convert.ToInt32(reader["ProductId"]) : 0;
+                                string productName = reader["ProductName"]?.ToString() ?? "";
+
+                                if (!productDictionary.ContainsKey(productId))
+                                {
+                                    productDictionary[productId] = new ProductModleMasterVM
+                                    {
+                                        productMaster = new ProductMaster
+                                        {
+                                            ProductId = productId,
+                                            ProductName = productName
+                                        },
+                                        modelMasters = new List<ModelMaster>()
+                                    };
+                                }
+
+                                if (reader["ModelId"] != DBNull.Value)
+                                {
+                                    productDictionary[productId].modelMasters.Add(new ModelMaster
+                                    {
+                                        ModelId = Convert.ToInt32(reader["ModelId"]),
+                                        ModelName = reader["ModelName"]?.ToString(),
+                                        ProductId = productId
+                                    });
+                                }
+                            }
+
+                            productList = productDictionary.Values.ToList();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Console.WriteLine(ex.Message);
+            }
+
+            return productList;
+        }
+
+
 
     }
 }

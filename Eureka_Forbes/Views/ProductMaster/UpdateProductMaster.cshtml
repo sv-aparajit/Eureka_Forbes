@@ -1,0 +1,98 @@
+﻿@model Eureka_Forbes.Models.ProductMaster.ProductMasterUpdateModel
+
+@{
+    ViewData["Title"] = "Update Product Master";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>UpdateProductMaster</h1>
+
+
+
+
+
+<h2>@ViewData["Title"]</h2>
+
+<form asp-action="UpdateProductMaster" method="post">
+    <!-- Product Name -->
+    <div class="form-group">
+        <label for="ProductName">Product Name</label>
+        <input type="text" class="form-control" id="ProductName" name="ProductName" value="@Model.Product.ProductName" required />
+    </div>
+
+    <!-- Product Models -->
+    <h4>Models</h4>
+    <div id="models-section">
+        @for (int i = 0; i < Model.ProductModels.Count; i++)
+        {
+            <div class="form-group">
+                <label for="ModelName_@i">Model Name</label>
+                <input type="text" class="form-control" id="ModelName_@i" name="ProductModels[@i].ModelName" value="@Model.ProductModels[i].ModelName" />
+                <!-- Add Delete Button for Model -->
+                <button type="button" class="btn btn-danger" onclick="deleteModel(@i)">Delete</button>
+            </div>
+        }
+    </div>
+
+    <!-- Steps for each Model -->
+    <h4>Steps</h4>
+    <div id="steps-section">
+        @for (int i = 0; i < Model.ProductModelSteps.Count; i++)
+        {
+            <div class="form-group">
+                <label for="StepName_@i">Step Name</label>
+                <input type="text" class="form-control" id="StepName_@i" name="ProductModelSteps[@i].StepName" value="@Model.ProductModelSteps[i].StepName" readonly/>
+
+                @* <!-- Hidden StepId Field -->
+                <input type="hidden" name="ProductModelSteps[@i].StepId" value="@Model.ProductModelSteps[i].StepId" /> *@
+
+                <label for="Priority_@i">Priority</label>
+                <input type="number" class="form-control" id="Priority_@i" name="ProductModelSteps[@i].Priority" value="@Model.ProductModelSteps[i].Priority" />
+
+                <!-- Add Delete Button for Step -->
+                <button type="button" class="btn btn-danger" onclick="deleteStep(@i)">Delete</button>
+            </div>
+        }
+    </div>
+
+    <!-- Add new Step button -->
+    <button type="button" class="btn btn-success" onclick="addStep()">Add New Step</button>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+</form>
+
+@section Scripts {
+    <script>
+        // JavaScript function to handle adding and removing steps dynamically
+
+        function addStep() {
+            var stepIndex = document.querySelectorAll('[id^="StepName_"]').length;
+            var stepsSection = document.getElementById('steps-section');
+
+            var newStep = document.createElement('div');
+            newStep.className = 'form-group';
+
+            newStep.innerHTML = `
+                <label for="StepName_${stepIndex}">Step Name</label>
+                <input type="text" class="form-control" id="StepName_${stepIndex}" name="ProductModelSteps[${stepIndex}].StepName" />
+                <label for="Priority_${stepIndex}">Priority</label>
+                <input type="number" class="form-control" id="Priority_${stepIndex}" name="ProductModelSteps[${stepIndex}].Priority" />
+                <button type="button" class="btn btn-danger" onclick="deleteStep(${stepIndex})">Delete</button>
+            `;
+
+            stepsSection.appendChild(newStep);
+        }
+
+        function deleteStep(index) {
+            var step = document.getElementById(`StepName_${index}`).parentElement;
+            step.remove();
+        }
+
+        function deleteModel(index) {
+            var model = document.getElementById(`ModelName_${index}`).parentElement;
+            model.remove();
+        }
+    </script>
+}
+
