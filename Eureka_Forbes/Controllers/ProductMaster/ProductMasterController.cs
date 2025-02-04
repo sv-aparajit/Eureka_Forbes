@@ -55,61 +55,7 @@ namespace Eureka_Forbes.Controllers.ProductMaster
             }
         }
 
-        //Read operation on Product added int id in parameter
-        public IActionResult GetProductsWithModelsAndSteps()
-        {
-            List<ProductViewModel> products = _dbContext.GetProductsWithModelsAndSteps();
-            return View(products);
-            //return View();
-        }
-
-        //Method to retreive previous information of products
-        public async Task<IActionResult> UpdateProductMaster(int productId)
-        {
-            var product = await _dbContext.GetProductForUpdate(productId); // Retrieve product, models, and steps
-            if (product == null)
-            {
-                return NotFound();
-            }
-
-            ViewBag.stepsList = await _dbContext.GetStepsAsync(); // Get the available steps for editing
-            return View(product); // Pass product data to the view
-        }
-        [HttpPost("UpdateProduct/{productId}")]
-        // Update Product method
-        //[HttpPut("UpdateProduct/{productId}")]
-        public async Task<JsonResult> UpdateProduct(int productId, [FromBody] ProductMasterUpdateModel productData)
-        {
-            if (productData == null || productData.Product == null || productData.ProductModels == null || productData.ProductModelSteps == null)
-            {
-                return Json(new { success = false, message = "Invalid data received." });
-            }
-
-            try
-            {
-                // Convert C# object to JSON string
-                string jsonData = JsonSerializer.Serialize(productData, new JsonSerializerOptions
-                {
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase // Ensures property names are in JSON camelCase format
-                });
-
-                // Call the database method to update product
-                bool isUpdated = await _dbContext.UpdateProductMaster(productId, productData);
-
-                if (isUpdated)
-                {
-                    return Json(new { success = true, message = "Product updated successfully.", redirectUrl = "/ProductMaster/GetProductsWithModelsAndSteps" });
-                }
-
-                return Json(new { success = false, message = "Error updating product." });
-            }
-            catch (Exception ex) 
-            {
-                Console.WriteLine($"Exception in UpdateProduct: {ex}");
-                return Json(new { success = false, message = $"Exception: {ex.Message}" });
-            }
-        }
-
+        
 
         //Delete Product based on ProductId
         [HttpPost]

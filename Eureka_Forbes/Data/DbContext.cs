@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Data;
 using Eureka_Forbes.Models;
+using Eureka_Forbes.Models.EmployeeMaster;
 using Eureka_Forbes.Models.ProductMaster;
 using Eureka_Forbes.ProductModelMaster;
+using Microsoft.CodeAnalysis;
 using Microsoft.Data.SqlClient;
 using Newtonsoft.Json;
 
@@ -185,6 +187,7 @@ namespace Eureka_Forbes.Data
                         var prosteps = new ProductModel
                         {
                             ProductId = Convert.ToInt32(rdr["ProductId"]),
+                            ModelId = Convert.ToInt32(rdr["ModelId"]),
                             ModelName = rdr["ModelName"].ToString()
                         };
 
@@ -353,69 +356,6 @@ namespace Eureka_Forbes.Data
 
         }
 
-        //Read Products with models and steps
-        public List<ProductViewModel> GetProductsWithModelsAndSteps()
-        {
-            List<ProductViewModel> products = new List<ProductViewModel>();
-
-            using (SqlConnection con = new SqlConnection(Con))
-            {
-                con.Open();
-                using (SqlCommand cmd = new SqlCommand("sp_GetProductsWithModelsAndSteps", con))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            int productId = reader.GetInt32(0);
-                            var existingProduct = products.Find(p => p.ProductId == productId);
-
-                            if (existingProduct == null)
-                            {
-                                existingProduct = new ProductViewModel
-                                {
-                                    ProductId = productId,
-                                    ProductName = reader.GetString(1),
-                                    Models = new List<ModelViewModel>()
-                                };
-                                products.Add(existingProduct);
-                            }
-
-                            if (!reader.IsDBNull(2))
-                            {
-                                int modelId = reader.GetInt32(2);
-                                var existingModel = existingProduct.Models.Find(m => m.ModelId == modelId);
-
-                                if (existingModel == null)
-                                {
-                                    existingModel = new ModelViewModel
-                                    {
-                                        ModelId = modelId,
-                                        ModelName = reader.IsDBNull(3) ? "Unnamed Model" : reader.GetString(3), // Check ModelName for NULL,
-                                        ProductId = productId,
-                                        Steps = new List<StepViewModel>()
-                                    };
-                                    existingProduct.Models.Add(existingModel);
-                                }
-
-                                if (!reader.IsDBNull(4))
-                                {
-                                    existingModel.Steps.Add(new StepViewModel
-                                    {
-                                        StepId = reader.GetInt32(4),
-                                        StepName = reader.IsDBNull(5) ? "Unnamed Step" : reader.GetString(5), // Check StepName for NULL
-                                        Priority = reader.IsDBNull(6) ? 0 : Convert.ToInt32(reader["Priority"]) // Handle NULL Priority
-                                    });
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            return products;
-        }
 
         //Delete Product
         public async Task<bool> DeleteProduct(int productId)
@@ -432,112 +372,7 @@ namespace Eureka_Forbes.Data
                 }
             }
         }
-        //Update Product
-        public async Task<bool> UpdateProductMaster(int productId, ProductMasterUpdateModel model)
-        {
-            string jsonData = JsonConvert.SerializeObject(model, Formatting.None,
-                new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
-
-            using (SqlConnection con = new SqlConnection(Con)) // Use your existing connection string
-            {
-                using (SqlCommand cmd = new SqlCommand("spUpdateProductMaster", con))
-                {
-                    cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@ProductId", productId);
-                    cmd.Parameters.AddWithValue("@JsonData", jsonData);
-
-                    await con.OpenAsync();
-                    await cmd.ExecuteNonQueryAsync();
-                    return true;
-                }
-            }
-        }
-        //Retreive Product,model and step to show before editing
-        public async Task<ProductMasterUpdateModel> GetProductForUpdate(int productId)
-        {
-            ProductMasterUpdateModel updateModel = null;
-
-            // SQL Queries for product data, product models, and product steps
-            string productQuery = "SELECT ProductId, ProductName FROM ProductMaster WHERE ProductId = @ProductId";
-            string modelsQuery = "SELECT ModelId, ModelName FROM ProductModels WHERE ProductId = @ProductId";
-            string stepsQuery = "SELECT StepId, StepName, ModelId, Priority FROM ProductStepsMaster WHERE ModelId IN (SELECT ModelId FROM ProductModels WHERE ProductId = @ProductId)";
-
-            try
-            {
-                using (SqlConnection con = new SqlConnection(Con))
-                {
-                    // Open the connection
-                    await con.OpenAsync();
-
-                    // Get Product Data
-                    using (SqlCommand cmd = new SqlCommand(productQuery, con))
-                    {
-                        cmd.Parameters.AddWithValue("@ProductId", productId);
-                        using (SqlDataReader rdr = await cmd.ExecuteReaderAsync())
-                        {
-                            if (rdr.Read())
-                            {
-                                updateModel = new ProductMasterUpdateModel
-                                {
-                                    Product = new Product
-                                    {
-                                        ProductId = rdr.GetInt32(0),
-                                        ProductName = rdr.GetString(1) 
-                                    },
-                                    ProductModels = new List<ProductModelsUpdate>(),
-                                    ProductModelSteps = new List<StepUpdateModel>()
-                                };
-                            }
-                        }
-                    }
-
-                    if (updateModel == null)
-                        return null; // If no product is found
-
-                    // Get Product Models
-                    using (SqlCommand cmd = new SqlCommand(modelsQuery, con))
-                    {
-                        cmd.Parameters.AddWithValue("@ProductId", productId);
-                        using (SqlDataReader rdr = await cmd.ExecuteReaderAsync())
-                        {
-                            while (rdr.Read())
-                            {
-                                updateModel.ProductModels.Add(new ProductModelsUpdate
-                                {
-                                    ModelId = rdr.GetInt32(0),
-                                    ModelName = rdr.GetString(1) 
-                                });
-                            }
-                        }
-                    }
-
-                    // Get Product Steps related to Models
-                    using (SqlCommand cmd = new SqlCommand(stepsQuery, con))
-                    {
-                        cmd.Parameters.AddWithValue("@ProductId", productId);
-                        using (SqlDataReader rdr = await cmd.ExecuteReaderAsync())
-                        {
-                            while (rdr.Read())
-                            {
-                                updateModel.ProductModelSteps.Add(new StepUpdateModel
-                                {
-                                    StepId = rdr.IsDBNull(0) ? (int?)null : rdr.GetInt32(0), // Nullability handling for StepId
-                                    StepName = rdr.IsDBNull(1) ? string.Empty : rdr.GetString(1),
-                                    Priority = rdr.IsDBNull(3) ? 0 : rdr.GetByte(3) // Nullability handling for Priority
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                // Log or handle the exception
-                throw new Exception("Error retrieving product data", ex);
-            }
-
-            return updateModel;
-        }
+        //clean code
 
         public async Task<List<ProductModleMasterVM>> GetProductModels()
         {
@@ -611,6 +446,75 @@ namespace Eureka_Forbes.Data
             }
 
             return dataSet;
+        }
+
+        /// Start Here Fro Employee DB Operation/////////////////
+        ///        
+
+        public async Task<DataSet> GetEmployeeStepsAllAsync(int id)
+        {
+            DataSet dataSet = new DataSet();
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(Con))
+                {
+                    string query1 = "select * from  ";
+
+                    string query2 = " SELECT pm.StepId,pm.StepName,pm.Priority,pm.ModelId FROM [Auto_MenPower_Allocation].[dbo].[ProductStepsMaster] pm" +
+                        " inner join ProductModels mo on pm.ModelId=mo.ModelId inner join ProductMaster mst on mo.ProductId=mst.ProductId" +
+                        " where pm.ModelId =" + id + " ";
+                    //We have written two Select Statements to return data from customers and orders table
+                    SqlDataAdapter dataAdapter = new SqlDataAdapter(" " + query1 + "; " + query2 + "", connection);
+                    // DataSet dataSet = new DataSet();                    
+                    dataAdapter.Fill(dataSet);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Console.WriteLine(ex.Message);
+            }
+
+            return dataSet;
+        }
+
+        public async Task<List<ProductMaster>> GetProductAllAsync()
+        {
+            
+            List<ProductMaster> lst = new List<ProductMaster>();
+            try
+            {
+                using (SqlConnection con = new SqlConnection(Con))
+                {
+                    SqlCommand cmd = new SqlCommand("SELECT [ProductId] ,[ProductName] FROM [dbo].[ProductMaster] ", con);
+                    cmd.CommandType = CommandType.Text;
+
+                    con.Open();
+                    SqlDataReader rdr = cmd.ExecuteReader();
+
+                    while (rdr.Read())
+                    {
+
+                        var prosteps = new ProductMaster
+                        {
+                            ProductId = Convert.ToInt32(rdr["ProductId"]),
+                            ProductName = rdr["ProductName"].ToString()
+                        };
+
+                        lst.Add(prosteps);
+                    }
+                    con.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
+            return lst;
+
         }
 
 

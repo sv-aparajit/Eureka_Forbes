@@ -1,0 +1,132 @@
+﻿@using Eureka_Forbes.ProductModelMaster
+
+@{
+    ViewData["Title"] = "AddEmployeeSkillMatrix";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var productList = ViewBag.productList as List<ProductMaster>;
+}
+
+
+@* <div class="row mb-3">
+
+    <div class="col text-center">
+        <h2 class="text-decoration-line-through">Create Product Master</h2>
+    </div>
+</div> *@
+<div class="row mb-3">
+    <div class="col text-start">
+        <a class="btn btn-outline-warning" asp-action="GetAllEmployee" asp-controller="EmployeeMaster">Back To List</a>
+    </div>
+    <div class="col text-end">
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 col-xl-3">
+        <div class="form-group">
+            <label for="srtdt">Select Product</label>
+            <select id="selectproduct" class="form-control">
+                <option selected="" value="">Select Product</option>
+                @foreach (var item in productList)
+                {
+                    <option value="@item.ProductId">@item.ProductName</option>
+                }               
+            </select>
+
+        </div>
+    </div>
+    <div class="col-lg-6 col-xl-3">
+        <div class="form-group">
+            <label for="srtdt">Select Product Model</label>
+            <select id="selectmodel" class="form-control">
+                <option selected="" value="">Select Product Model</option>
+                
+            </select>
+
+        </div>
+    </div>
+    <div class="col-12">
+        <table class="table table-bordered" id="tblskillmatrix" hidden>
+            <thead>
+                <tr>
+                    <th>Step Name</th>
+                    <th>Priority</th>
+                </tr>
+            </thead>
+            <tbody>              
+
+
+                <!-- Add rows here -->
+            </tbody>
+        </table>
+        <div class="row mb-3" id="btnshow" hidden>
+            <div class="col text-start">
+                <button type="submit" class="btn btn-primary" onclick="btnSaveProduct()">Submit</button>
+            </div>
+            <div class="col text-end">
+                <a class="btn btn-inverse-warning" asp-action="GetAllProduct" asp-controller="ProductMaster">Back To List</a>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts
+{
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script>
+
+        $(document).on('change', '#selectproduct', function()
+        {
+         debugger;
+        const selectedValue = $(this).val();
+
+        if (selectedValue) {
+
+            $.ajax({
+                url: '@Url.Action("GetSubProductModel", "EmployeeMaster")',
+                type: 'GET',
+                data: { productId: selectedValue },
+                success: function(data) {
+                    const subCategoryDropdown = $('#selectmodel');
+                    subCategoryDropdown.empty();
+                    subCategoryDropdown.append('<option value="">--Select Subcategory--</option>');
+                    $.each(data, function(index, subCategory) {
+
+                            subCategoryDropdown.append('<option value="' + subCategory.modelId + '">' + subCategory.modelName + '</option>');
+
+                    });
+                }
+
+            });
+
+        } else {
+
+            $('#selectmodel').empty().append('<option value="">--Select Subcategory--</option>');
+
+        }
+
+    });
+
+        $(document).on('change', '#selectmodel', function()
+            {
+             debugger;
+            const selectedValue = $(this).val();
+
+            if (selectedValue) {
+
+                $.ajax({
+                    url: '@Url.Action("GetEmployeeStageMatrix", "EmployeeMaster")',
+                    type: 'GET',
+                    data: { modelId: selectedValue },
+                    success: function(data) {
+                        
+                    }
+
+                });
+
+            } 
+
+        });
+
+</script>
+
+}

@@ -1,0 +1,42 @@
+﻿
+@{
+    ViewData["Title"] = "GetAllEmployee";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row mb-3">
+    <div class="col text-center">
+        <h2 class="text-decoration-line-through">List Of Employee</h2>
+    </div>
+</div>
+
+<p>
+    <a class="btn btn-outline-primary" asp-action="AddEmployeeSkillMatrix" asp-controller="EmployeeMaster">Add New Employee Skills</a>
+</p>
+<br />
+
+<table id="allProductTable" class="table tab-border table-hover">
+    <thead>
+        <tr>
+            <th>Product Name</th>
+            <th>Models</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+      @*   @foreach (var product in Model)
+        {
+            <tr id="row-@product.ProductId">
+                <td>@product.ProductName</td>
+                <td>
+                    @product.ModelName
+                </td>
+                <td>
+                    <a class="btn btn-outline-warning" asp-action="UpdateProductModel" asp-controller="ProductMaster" asp-route-id="@product.ModelId">Edit</a>|
+                    <a class="btn btn-outline-primary" asp-action="GetAllProductById" asp-controller="ProductMaster" asp-route-id="@product.ModelId">Details</a>|
+                    <a class="btn btn-outline-danger" asp-action="DeleteProductById" asp-controller="ProductMaster" asp-route-id="@product.ProductId">Delete</a>                   
+                </td>
+            </tr>
+        } *@
+    </tbody>
+</table>
