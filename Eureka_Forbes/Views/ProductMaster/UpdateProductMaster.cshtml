@@ -5,19 +5,18 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>UpdateProductMaster</h1>
-
-
-
-
 
 <h2>@ViewData["Title"]</h2>
 
-<form asp-action="UpdateProductMaster" method="post">
+@* <form asp-action="UpdateProductMaster" method="post"> *@
+<form asp-action="UpdateProduct" asp-controller="ProductMaster" method="post">
+   
+    @* <input type="hidden" name="_method" value="PUT" /> *@
     <!-- Product Name -->
     <div class="form-group">
         <label for="ProductName">Product Name</label>
         <input type="text" class="form-control" id="ProductName" name="ProductName" value="@Model.Product.ProductName" required />
+        <p>Product ID: @Model?.Product?.ProductId</p>
     </div>
 
     <!-- Product Models -->
@@ -41,10 +40,10 @@
         {
             <div class="form-group">
                 <label for="StepName_@i">Step Name</label>
-                <input type="text" class="form-control" id="StepName_@i" name="ProductModelSteps[@i].StepName" value="@Model.ProductModelSteps[i].StepName" readonly/>
+                <input type="text" class="form-control" id="StepName_@i" name="ProductModelSteps[@i].StepName" value="@Model.ProductModelSteps[i].StepName" data-step-id="@Model.ProductModelSteps[i].StepId" readonly />
 
-                @* <!-- Hidden StepId Field -->
-                <input type="hidden" name="ProductModelSteps[@i].StepId" value="@Model.ProductModelSteps[i].StepId" /> *@
+                 <!-- Hidden StepId Field -->
+                <input type="hidden" name="ProductModelSteps[@i].StepId" value="@Model.ProductModelSteps[i].StepId" /> 
 
                 <label for="Priority_@i">Priority</label>
                 <input type="number" class="form-control" id="Priority_@i" name="ProductModelSteps[@i].Priority" value="@Model.ProductModelSteps[i].Priority" />
@@ -58,13 +57,17 @@
     <!-- Add new Step button -->
     <button type="button" class="btn btn-success" onclick="addStep()">Add New Step</button>
 
+
     <!-- Submit Button -->
-    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <input type="hidden" id="ProductId" name="ProductId" value="@Model.Product.ProductId" />
+    <button type="submit" class="btn btn-primary" onclick="submitUpdate()">Save Changes</button>
 </form>
 
-@section Scripts {
-    <script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
         // JavaScript function to handle adding and removing steps dynamically
+
+        var availableSteps = @Html.Raw(Json.Serialize(ViewBag.stepsList));
 
         function addStep() {
             var stepIndex = document.querySelectorAll('[id^="StepName_"]').length;
@@ -73,9 +76,16 @@
             var newStep = document.createElement('div');
             newStep.className = 'form-group';
 
+            var optionsHtml = availableSteps.map(step =>
+                `<option value="${step.stepName}">${step.stepName}</option>`
+            ).join('');
+
             newStep.innerHTML = `
                 <label for="StepName_${stepIndex}">Step Name</label>
-                <input type="text" class="form-control" id="StepName_${stepIndex}" name="ProductModelSteps[${stepIndex}].StepName" />
+                <select class="form-control" id="StepName_${stepIndex}" name="ProductModelSteps[${stepIndex}].StepName">
+                    <option value="">-- Select Step --</option>
+                    ${optionsHtml}
+                </select>
                 <label for="Priority_${stepIndex}">Priority</label>
                 <input type="number" class="form-control" id="Priority_${stepIndex}" name="ProductModelSteps[${stepIndex}].Priority" />
                 <button type="button" class="btn btn-danger" onclick="deleteStep(${stepIndex})">Delete</button>
@@ -83,6 +93,7 @@
 
             stepsSection.appendChild(newStep);
         }
+
 
         function deleteStep(index) {
             var step = document.getElementById(`StepName_${index}`).parentElement;
@@ -93,6 +104,76 @@
             var model = document.getElementById(`ModelName_${index}`).parentElement;
             model.remove();
         }
+       
     </script>
-}
+    <script>
+     function submitUpdate() {
+
+        let productId = parseInt(document.getElementById("ProductId").value, 10);
+        if (!productId) {
+            alert("Product ID is missing.");
+            return;
+        }
+
+        let productData = {
+            product: {
+                productName: document.getElementById("ProductName").value
+            },
+            productModels: [],
+            productModelSteps: []
+        };
+
+        // Populate productModels with only ModelName
+        document.querySelectorAll("[id^=ModelName_]").forEach(input => {
+            productData.productModels.push({
+                ModelName: input.value  // Only ModelName is needed
+            });
+        });
+
+        // Populate productModelSteps with only stepId and priority
+        document.querySelectorAll("[id^=StepName_]").forEach((input, index) => {
+            let priorityInput = document.getElementById(`Priority_${index}`);
+            let stepId = parseInt(input.getAttribute("data-step-id"), 10); // Assuming stepId is stored in a data attribute
+
+            if (!isNaN(stepId)) {  // Ensure stepId is valid
+                productData.productModelSteps.push({
+                    stepId: stepId,  // Using existing stepId
+                    priority: priorityInput ? parseInt(priorityInput.value, 10) : 0
+                });
+            }
+        });
+
+        // Send the updated product data to the backend
+        fetch(`/ProductMaster/UpdateProduct/${productId}`, {
+              method: "Post",
+              headers: { "Content-Type": "application/json" },
+               body: JSON.stringify(productData)
+          })
+        .then(response => {
+            if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+             }
+             return response.text(); // Read as text first
+            })
+             .then(text => {
+            try {
+                return JSON.parse(text); // Safely parse JSON
+             } catch (error) {
+               console.error("Invalid JSON response:", text);
+           throw new Error("Invalid JSON received from server.");
+        }
+        })
+         .then(data => {
+            if (data.success) {
+                alert("Product updated successfully!");
+                 window.location.href = "/ProductMaster/GetProductsWithModelsAndSteps";
+         } else {
+              alert("Update failed: " + data.message);
+                 }
+         })
+        .catch(error => console.error("Error:", error));
+
+    }
+    </script>
+
 

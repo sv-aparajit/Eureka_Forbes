@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using Eureka_Forbes.Models;
 using Eureka_Forbes.Models.ProductMaster;
 using Eureka_Forbes.ProductModelMaster;
@@ -313,6 +314,45 @@ namespace Eureka_Forbes.Data
             
         }
 
+
+        public async Task<bool> UpdateProductModel(string jsonData)
+        {
+            try
+            {
+                using (SqlConnection con = new SqlConnection(Con))
+                {
+                    await con.OpenAsync();
+                    using (SqlTransaction transaction = con.BeginTransaction())
+                    {
+                        try
+                        {
+                            using (SqlCommand cmd = new SqlCommand("spUpdateProductModelMaster", con, transaction))
+                            {
+                                cmd.CommandType = CommandType.StoredProcedure;
+                                cmd.Parameters.Add(new SqlParameter("@JsonData", SqlDbType.NVarChar) { Value = jsonData });
+
+                                await cmd.ExecuteNonQueryAsync();
+
+                                transaction.Commit();
+                                return true;
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Database error: {ex.Message}");
+                return false;
+            }
+
+        }
+
         //Read Products with models and steps
         public List<ProductViewModel> GetProductsWithModelsAndSteps()
         {
@@ -441,7 +481,8 @@ namespace Eureka_Forbes.Data
                                 {
                                     Product = new Product
                                     {
-                                        ProductName = rdr.GetString(1) // ProductName only
+                                        ProductId = rdr.GetInt32(0),
+                                        ProductName = rdr.GetString(1) 
                                     },
                                     ProductModels = new List<ProductModelsUpdate>(),
                                     ProductModelSteps = new List<StepUpdateModel>()
@@ -511,42 +552,26 @@ namespace Eureka_Forbes.Data
                     p.ProductId, p.ProductName, 
                     m.ModelId, m.ModelName, m.ProductId 
                     FROM ProductMaster p
-                    LEFT JOIN ProductModels m ON p.ProductId = m.ProductId", con))
+                    LEFT JOIN ProductModels m ON p.ProductId = m.ProductId order by p.ProductId desc ", con))
                     {
                         using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
                         {
-                            Dictionary<int, ProductModleMasterVM> productDictionary = new Dictionary<int, ProductModleMasterVM>();
+                           // Dictionary<int, ProductModleMasterVM> productDictionary = new Dictionary<int, ProductModleMasterVM>();
 
                             while (await reader.ReadAsync())
                             {
-                                int productId = reader["ProductId"] != DBNull.Value ? Convert.ToInt32(reader["ProductId"]) : 0;
-                                string productName = reader["ProductName"]?.ToString() ?? "";
-
-                                if (!productDictionary.ContainsKey(productId))
+                                var prosteps = new ProductModleMasterVM
                                 {
-                                    productDictionary[productId] = new ProductModleMasterVM
-                                    {
-                                        productMaster = new ProductMaster
-                                        {
-                                            ProductId = productId,
-                                            ProductName = productName
-                                        },
-                                        modelMasters = new List<ModelMaster>()
-                                    };
-                                }
+                                    ProductId = Convert.ToInt32(reader["ProductId"]),
+                                    ModelId = Convert.ToInt32(reader["ModelId"]),
+                                    ProductName = reader["ProductName"].ToString(),
+                                    ModelName = reader["ModelName"].ToString()
+                                };
 
-                                if (reader["ModelId"] != DBNull.Value)
-                                {
-                                    productDictionary[productId].modelMasters.Add(new ModelMaster
-                                    {
-                                        ModelId = Convert.ToInt32(reader["ModelId"]),
-                                        ModelName = reader["ModelName"]?.ToString(),
-                                        ProductId = productId
-                                    });
-                                }
+                                productList.Add(prosteps);
                             }
 
-                            productList = productDictionary.Values.ToList();
+                            await con.CloseAsync();
                         }
                     }
                 }
@@ -559,7 +584,34 @@ namespace Eureka_Forbes.Data
 
             return productList;
         }
+        public async Task<DataSet> GetProductModelsById(int id)
+        {            
+            DataSet dataSet=new DataSet();
+            try
+            {
+                using (SqlConnection connection = new SqlConnection(Con))
+                {
+                    string query1 = "select  pm.ProductId,pm.ProductName,mo.ModelId,mo.ModelName from ProductMaster pm " +
+                        " inner join ProductModels mo on pm.ProductId=mo.ProductId where mo.ModelId="+id+" ";
 
+                    string query2 = " SELECT pm.StepId,pm.StepName,pm.Priority,pm.ModelId FROM [Auto_MenPower_Allocation].[dbo].[ProductStepsMaster] pm" +
+                        " inner join ProductModels mo on pm.ModelId=mo.ModelId inner join ProductMaster mst on mo.ProductId=mst.ProductId" +
+                        " where pm.ModelId ="+id+" ";
+                    //We have written two Select Statements to return data from customers and orders table
+                    SqlDataAdapter dataAdapter = new SqlDataAdapter(" "+query1+ "; "+query2+"", connection);
+                   // DataSet dataSet = new DataSet();                    
+                    dataAdapter.Fill(dataSet);
+                   
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the exception
+                Console.WriteLine(ex.Message);
+            }
+
+            return dataSet;
+        }
 
 
     }

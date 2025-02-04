@@ -5,7 +5,19 @@
     var stepsList = ViewBag.stepsList as List<Steps>;
 }
 
-<h1>CreateProductMaster</h1>
+<div class="row mb-3">
+
+    <div class="col text-center">
+        <h2 class="text-decoration-line-through">Create Product Master</h2>
+    </div>
+</div>
+<div class="row mb-3">
+    <div class="col text-start">
+        <a class="btn btn-outline-warning" asp-action="GetAllProduct" asp-controller="ProductMaster">Back To List</a>
+    </div>
+    <div class="col text-end">
+    </div>
+</div>
 
 <div class="row">
     <div class="col-12 mb-3">
@@ -48,9 +60,14 @@
                 <!-- Add rows here -->
             </tbody>
         </table>
-        <div class="col-12 mb-3">
-            <button type="submit" class="btn btn-primary" onclick="btnSaveProduct()">Submit</button>
-        </div>
+        <div class="row mb-3">
+            <div class="col text-start">
+                <button type="submit" class="btn btn-primary" onclick="btnSaveProduct()">Submit</button>
+            </div>
+            <div class="col text-end">
+                <a class="btn btn-inverse-warning" asp-action="GetAllProduct" asp-controller="ProductMaster">Back To List</a>
+            </div>
+        </div>       
     </div>
 </div>
 
@@ -402,7 +419,7 @@
             .then(data => {
             if (data.success) {
                 alert('Entries saved successfully.');
-                window.location.href = '/ProductMaster/GetProductsWithModelsAndSteps';
+                window.location.href = '/ProductMaster/GetAllProduct';
                 //resetForm(); // Reset form fields after successful entry
             } else {
                 alert('Error saving product: ' + data.message);

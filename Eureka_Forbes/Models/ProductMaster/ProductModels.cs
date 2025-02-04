@@ -2,6 +2,7 @@
 {
     public class ProductModels
     {
-        public string ModelName { get; set; }
+        public int? productModelId { get; set; }
+        public string? ModelName { get; set; }
     }
 }

@@ -1,0 +1,186 @@
+﻿@using Eureka_Forbes.Models.ProductMaster
+@model Eureka_Forbes.ProductModelMaster.UpdateModelStepVM
+
+@{
+    ViewData["Title"] = "UpdateProductModel";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var stepsList = ViewBag.stepsList as List<Steps>;
+    var data = Model.stepsModelMasters;
+    var data1 = Model.productModleMasterVM;
+    var data2 = "";
+}
+<div class="row mb-3">
+    
+    <div class="col text-center">
+        <h2 class="text-decoration-line-through">Update Product Model</h2>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col text-start">        
+        <a class="btn btn-outline-warning" asp-action="GetAllProduct" asp-controller="ProductMaster">Back To List</a>
+    </div>
+    <div class="col text-end">
+        
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-3">
+        <label>Product</label>
+        <input type="text" class="form-control" disabled value="@Model.productModleMasterVM.ProductName" id="productInput" />
+    </div>
+    <div class="col-12 mb-3">
+        <label>Product Model</label>
+        <input type="text" class="form-control stepid" disabled value="@Model.productModleMasterVM.ModelName" data-step-id="@Model.productModleMasterVM.ModelId" />
+    </div>
+    <div class="col-12">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Step Name</th>
+                    <th>Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var st in Model.stepsModelMasters)
+                {
+                    <tr>
+                        <td>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" checked id="@st.StepId" onchange="togglePriority(this)">
+                                <label class="form-check-label" for="@st.StepId">
+                                    @st.StepName
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control priority-input" name="Priority" value="@st.Priority" />
+                            <input type="hidden" name="StepId" value="@st.StepId" />
+                        </td>
+                    </tr>
+
+                }
+
+                @foreach (var item in stepsList)
+                {
+                    <tr>
+                        <td>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"  id="@item.StepId" onchange="togglePriority(this)">
+                                <label class="form-check-label" for="@item.StepId">
+                                    @item.StepName
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control priority-input" name="Priority" disabled value="0" />
+                            <input type="hidden" name="StepId" value="@item.StepId" />
+                        </td>                                          
+                                               
+                       
+                    </tr>
+                }
+
+
+                <!-- Add rows here -->
+            </tbody>
+        </table>
+        <div class="row mb-3">
+            <div class="col text-start">
+                <button type="submit" class="btn btn-outline-info" onclick="btnUpdatwProduct()">Update</button>
+            </div>
+            <div class="col text-end">
+                <a class="btn btn-outline-warning" asp-action="GetAllProduct" asp-controller="ProductMaster">Back To List</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+             document.querySelectorAll('.priority-input').forEach(input => {
+                 input.disabled = true; // Disable all priority inputs
+             });
+    });
+
+         function togglePriority(checkbox) {
+             const priorityInput = checkbox.closest('tr').querySelector('.priority-input');
+             priorityInput.disabled = !checkbox.checked; // Enable if checked, disable if unchecked
+             if (!checkbox.checked) {
+                 priorityInput.value = "0"; // Reset priority value to 0 if unchecked
+             }
+         }
+          function btnUpdatwProduct() {
+        // Collect form data
+        debugger;
+        //let productName = document.querySelector('input[placeholder="Enter Product Name"]').value;
+       let productName = document.getElementById("productInput").value;
+        let inputElement = document.querySelector('input[type="text"].stepid');
+        let productModelId = inputElement.dataset.stepId;
+        let steps = [];
+
+       
+        document.querySelectorAll('tbody tr').forEach(row => {
+            let checkbox = row.querySelector('.form-check-input');
+            let priorityInput = row.querySelector('input[name="Priority"]');
+            // Check if the hidden input exists
+        let stepIdElement = row.querySelector('input[name="StepId"]');
+        if (!stepIdElement) {
+            console.warn("Row does not contain a hidden input with name 'StepId'. Skipping this row.");
+            return; // Skip this row
+        }
+             let stepId = stepIdElement.value;
+
+            // Only include steps where the checkbox is checked
+            if (checkbox.checked) {
+                let stepName = row.querySelector('td:nth-child(1)').textContent.trim();
+                let priority = priorityInput.value;
+
+                // Ensure priority is a valid number (not 0 or null)
+                if (priority && !isNaN(priority) && priority > 0) {
+                    steps.push({
+                        StepName: stepName,
+                        Priority: parseInt(priority, 10), // Ensure priority is an integer
+                        StepId: stepId
+                    });
+                }
+            }
+        });
+
+        // Create JSON object
+        let productData = {
+            product: { productName: productName },
+            ProductModels: [{ productModelId: productModelId }],
+            productModelSteps: steps
+        };
+
+        alert(JSON.stringify(productData)); // Use JSON.stringify to see the actual JSON structure
+
+        // Send JSON data to the server
+        fetch('/ProductMaster/UpdateProductModel', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(productData)
+        })
+        .then(response => response.json())
+            .then(data => {
+            if (data.success) {
+                alert('Entries saved successfully.');
+                window.location.href = '/ProductMaster/GetAllProduct';
+                //resetForm(); // Reset form fields after successful entry
+            } else {
+                alert('Error saving product: ' + data.message);
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('An error occurred while saving the product.');
+        });
+    }
+
+ </script>

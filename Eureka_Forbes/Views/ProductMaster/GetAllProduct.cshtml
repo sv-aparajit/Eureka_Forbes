@@ -4,38 +4,37 @@
     ViewData["Title"] = "Get All Products and Models";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-
-<h1>Product List</h1>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.css">
+@* <h1>Product List</h1> *@
 
 <p>
-    <a asp-action="CreateProductMaster">Create New Product</a>
+    <a class="btn btn-outline-primary" asp-action="CreateProductMaster">Add New Product</a>
 </p>
+<br />
 
-<table class="table">
+<table id="allProductTable"  class="table tab-border table-hover">
     <thead>
         <tr>
             <th>Product Name</th>
             <th>Models</th>
-            <th>Actions</th>
+            <th>Action</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var product in Model)
         {
-            <tr id="row-@product.productMaster.ProductId">
-                <td>@product.productMaster.ProductName</td>
+            <tr id="row-@product.ProductId">
+                <td>@product.ProductName</td>
                 <td>
-                    <ul>
-                        @foreach (var modelm in product.modelMasters)
-                        {
-                            <li>@modelm.ModelName</li>
-                        }
-                    </ul>
+                    @product.ModelName
                 </td>
                 <td>
-                    @Html.ActionLink("Edit", "Edit", new { id = product.productMaster.ProductId }) |
-                    @Html.ActionLink("Details", "Details", new { id = product.productMaster.ProductId }) |
-                    <a href="javascript:void(0);" class="delete-product" data-id="@product.productMaster.ProductId">Delete</a>
+                    <a class="btn btn-outline-warning" asp-action="UpdateProductModel" asp-controller="ProductMaster" asp-route-id="@product.ModelId">Edit</a>|
+                    <a class="btn btn-outline-primary" asp-action="GetAllProductById" asp-controller="ProductMaster" asp-route-id="@product.ModelId">Details</a>|
+                    <a class="btn btn-outline-danger" asp-action="DeleteProductById" asp-controller="ProductMaster" asp-route-id="@product.ProductId">Delete</a>
+                     @* @Html.ActionLink("Edit", "Edit",  new { id = product.ModelId }) |
+                    @Html.ActionLink("Details", "Details", new { id = product.ModelId }) | *@
+                    @* <a class="btn btn-outline-danger delete-product" href="javascript:void(0);" data-id="@product.ProductId">Delete</a> *@
                 </td>
             </tr>
         }
@@ -43,9 +42,14 @@
 </table>
 @section Scripts {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.js"></script>
     <script>
         $(document).ready(function () {
+            $('#allProductTable').dataTable({
+            
+            });
             $(".delete-product").click(function () {
+                debugger;
                 var productId = $(this).data("id");
                 if (confirm("Are you sure you want to delete this product?")) {
                     $.ajax({

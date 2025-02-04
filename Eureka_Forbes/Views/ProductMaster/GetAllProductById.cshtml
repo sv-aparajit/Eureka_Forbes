@@ -1,0 +1,70 @@
+﻿@model Eureka_Forbes.ProductModelMaster.UpdateModelStepVM
+@{
+    ViewData["Title"] = "GetAllProductById";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<div class="row mb-3">
+    <div class="col text-center">
+        <h2 class="text-decoration-line-through">Details Of Product Model</h2>
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col text-start">
+        <a class="btn btn-outline-warning" asp-action="GetAllProduct" asp-controller="ProductMaster">Back To List</a>
+    </div>
+    <div class="col text-end">
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-3">
+        <label>Product</label>
+        <input type="text" class="form-control" disabled value="@Model.productModleMasterVM.ProductName" id="productInput" />
+    </div>
+    <div class="col-12 mb-3">
+        <label>Product Model</label>
+        <input type="text" class="form-control stepid" disabled value="@Model.productModleMasterVM.ModelName" data-step-id="@Model.productModleMasterVM.ModelId" />
+    </div>
+    <div class="col-12">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Step Name</th>
+                    <th>Priority</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var st in Model.stepsModelMasters)
+                {
+                    <tr>
+                        <td>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" checked id="@st.StepId" onchange="togglePriority(this)">
+                                <label class="form-check-label" for="@st.StepId">
+                                    @st.StepName
+                                </label>
+                            </div>
+                        </td>
+                        <td>
+                            <input type="number" class="form-control priority-input" name="Priority" value="@st.Priority" disabled />
+                            <input type="hidden" name="StepId" value="@st.StepId" />
+                        </td>
+                    </tr>
+
+                }
+
+                <!-- Add rows here -->
+            </tbody>
+        </table>
+        <div class="row mb-3">
+            <div class="col text-start">
+                <a class="btn btn-info" asp-action="UpdateProductModel" asp-controller="ProductMaster" asp-route-id="@Model.productModleMasterVM.ModelId">Update</a>
+            </div>
+            <div class="col text-end">
+                <a class="btn btn-outline-warning" asp-action="GetAllProduct" asp-controller="ProductMaster">Back To List</a>
+            </div>
+        </div>
+    </div>
+</div>
+
